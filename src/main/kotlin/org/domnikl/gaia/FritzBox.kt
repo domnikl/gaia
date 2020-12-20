@@ -11,7 +11,8 @@ import okhttp3.Request
 import okhttp3.Response
 import java.net.URL
 import java.security.MessageDigest
-import javax.xml.bind.DatatypeConverter
+import java.math.BigInteger
+
 
 class FritzBox(
     private val password: String,
@@ -77,7 +78,7 @@ class FritzBox(
             it.update("${s.challenge}-$password".toByteArray(Charsets.UTF_16LE))
         }
 
-        val hash = DatatypeConverter.printHexBinary(md5.digest()).toLowerCase()
+        val hash = BigInteger(1, md5.digest()).toString(16)
 
         return "${s.challenge}-$hash"
     }
