@@ -20,30 +20,35 @@ fun main(args: Array<String>) = runBlocking {
     val fritzBox = factory.fritzBox
     val notificationChannel = factory.notificationChannel
 
-    val actors = config.getObject("actors").keys.map { key ->
-        val ain = config.getString("actors.$key.ain")
-        val name = config.getString("actors.$key.name")
-        val message = config.getString("actors.$key.message")
+    try {
+        val actors = config.getObject("actors").keys.map { key ->
+            val ain = config.getString("actors.$key.ain")
+            val name = config.getString("actors.$key.name")
+            val message = config.getString("actors.$key.message")
 
-        val queueSize = config.getInt("actors.$key.queue.size")
-        val queueThreshold = config.getDouble("actors.$key.queue.threshold").toFloat()
+            val queueSize = config.getInt("actors.$key.queue.size")
+            val queueThreshold = config.getDouble("actors.$key.queue.threshold").toFloat()
 
-        Actor(
-            ain,
-            name,
-            Queue(queueSize, queueThreshold) {
-                notificationChannel.sendMessage(message).queue()
-                logger.info("Triggered: $name")
-            }
-        )
-    }
-
-    while (true) {
-        actors.forEach { actor ->
-            val power = fritzBox.power(actor.ain).also { actor.queue.add(it) }
-            logger.info("Value from FritzBox actor '${actor.name}' (${actor.ain}) $power")
+            Actor(
+                ain,
+                name,
+                Queue(queueSize, queueThreshold) {
+                    notificationChannel.sendMessage(message).queue()
+                    logger.info("Triggered: $name")
+                }
+            )
         }
 
-        delay(1000)
+        while (true) {
+            actors.forEach { actor ->
+                val power = fritzBox.power(actor.ain).also { actor.queue.add(it) }
+                logger.info("Value from FritzBox actor '${actor.name}' (${actor.ain}) $power")
+            }
+
+            delay(1000)
+        }
+    } catch (e: Exception) {
+        factory.jda.shutdownNow()
+        throw e
     }
 }

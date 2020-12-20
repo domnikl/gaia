@@ -21,7 +21,7 @@ class Factory(config: Config) {
         )
     }
 
-    private val jda by lazy {
+    val jda by lazy {
         JDABuilder.createDefault(config.getString("discord.token"))
             .build()
             .also { it.addEventListener(DiscordMessageListener()) }
