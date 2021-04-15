@@ -2,14 +2,18 @@ import com.typesafe.config.ConfigFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.domnikl.gaia.Factory
-import org.domnikl.gaia.Queue
+import org.domnikl.gaia.TriggeringQueue
 import java.io.File
 
 data class Actor(
     val ain: String,
     val name: String,
-    val queue: Queue
-)
+    val triggeringQueues: List<TriggeringQueue>
+) {
+    suspend fun add(measurement: Float) {
+        triggeringQueues.forEach { it.add(measurement) }
+    }
+}
 
 fun main(args: Array<String>) = runBlocking {
     require(args.isNotEmpty()) { "Please provide a config file" }
@@ -24,24 +28,32 @@ fun main(args: Array<String>) = runBlocking {
         val actors = config.getObject("actors").keys.map { key ->
             val ain = config.getString("actors.$key.ain")
             val name = config.getString("actors.$key.name")
-            val message = config.getString("actors.$key.message")
+            val messageStart = config.getString("actors.$key.messageStart")
+            val messageEnd = config.getString("actors.$key.messageEnd")
 
             val queueSize = config.getInt("actors.$key.queue.size")
-            val queueThreshold = config.getDouble("actors.$key.queue.threshold").toFloat()
+            val thresholdStart = config.getDouble("actors.$key.queue.thresholdStart").toFloat()
+            val thresholdEnd = config.getDouble("actors.$key.queue.thresholdEnd").toFloat()
 
             Actor(
                 ain,
                 name,
-                Queue(queueSize, queueThreshold) {
-                    notificationChannel.sendMessage(message).queue()
-                    logger.info("Triggered: $name")
-                }
+                listOf(
+                    TriggeringQueue(queueSize, TriggeringQueue.Trigger({ f: Float -> f > thresholdStart }) {
+                        notificationChannel.sendMessage(messageStart).queue()
+                        logger.info("Triggered start: $name ($ain)")
+                    }),
+                    TriggeringQueue(queueSize, TriggeringQueue.Trigger({ f: Float -> f < thresholdEnd }) {
+                        notificationChannel.sendMessage(messageEnd).queue()
+                        logger.info("Triggered end: $name ($ain)")
+                    })
+                )
             )
         }
 
         while (true) {
             actors.forEach { actor ->
-                val power = fritzBox.power(actor.ain).also { actor.queue.add(it) }
+                val power = fritzBox.power(actor.ain).also { actor.add(it) }
                 logger.info("Value from FritzBox actor '${actor.name}' (${actor.ain}) $power")
             }
 

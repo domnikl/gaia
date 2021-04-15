@@ -3,5 +3,5 @@
 /.idea/
 /gaia.conf
 /supervisor.conf
-/install.bat
+/deploy.sh
 /.run

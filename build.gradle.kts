@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.4.32"
     application
     id("com.github.johnrengelman.shadow") version "5.0.0"
 }
@@ -20,8 +20,8 @@ application {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2")
-    implementation("com.squareup.okhttp3:okhttp:4.2.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.9")

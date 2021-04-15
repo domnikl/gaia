@@ -1,13 +1,13 @@
 import kotlinx.coroutines.runBlocking
-import org.domnikl.gaia.Queue
+import org.domnikl.gaia.TriggeringQueue
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class QueueTest {
+class TriggeringQueueTest {
     private var l = emptyList<Float>()
-    private val q = Queue(3, 10F) {
+    private val q = TriggeringQueue(3, TriggeringQueue.Trigger({ f -> f < 10F }) {
         l = it
-    }
+    })
 
     @Test
     fun canTriggerWhenTheThresholdWasReached() {

@@ -1,14 +1,13 @@
 package org.domnikl.gaia
 
-class Queue(
+class TriggeringQueue(
     private val size: Int,
-    private val threshold: Float,
-    private val trigger: suspend (List<Float>) -> Unit
+    private val trigger: Trigger
 ) {
     private var elements = mutableListOf<Pair<Float, Boolean>>()
 
     suspend fun add(element: Float) {
-        elements.add(element to (element < threshold))
+        elements.add(element to trigger.condition(element))
 
         triggerIfThresholdWasReached()
 
@@ -20,7 +19,9 @@ class Queue(
         val tail = elements.takeLast(elements.size - 1)
 
         if (!head && tail.all { it.second } && elements.size > size) {
-            trigger(elements.map { it.first })
+            trigger.fn(elements.map { it.first})
         }
     }
+
+    data class Trigger(val condition: (Float) -> Boolean, val fn: suspend (List<Float>) -> Unit)
 }
