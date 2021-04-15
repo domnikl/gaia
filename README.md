@@ -19,19 +19,23 @@ actors {
     0: {
         ain = "<device-ain>"
         name = "washing machine"
-        message = "Die Waschmaschine ist fertig, bitte Wäsche aufhängen!"
+        messageStart = "Die Waschmaschine legt jetzt los"
+        messageEnd = "Die Waschmaschine ist fertig, bitte Wäsche aufhängen!"
         queue {
             size = 10 # retention of 10s (means collect a value every second, keep values for 10s)
-            threshold = 4.0 # watts
+            thresholdStart = 0.1 # watts
+            thresholdEnd = 4.0 # watts
         }
     },
     1: {
         ain = "<device-ain>"
         name = "dish washer"
-        message = "Die Spülmaschine ist fertig, bitte ausräumen!"
+        messageStart = "Die Spülmaschine nimmt ihren Dienst auf"
+        messageEnd = "Die Spülmaschine ist fertig, bitte ausräumen!"
         queue {
             size = 60
-            threshold = 4.0
+            thresholdStart = 0.1
+            thresholdEnd = 4.0
         }
     }
 }
