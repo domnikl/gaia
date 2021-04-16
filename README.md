@@ -23,7 +23,7 @@ actors {
         messageEnd = "Die Waschmaschine ist fertig, bitte Wäsche aufhängen!"
         queue {
             size = 10 # retention of 10s (means collect a value every second, keep values for 10s)
-            thresholdStart = 0.1 # watts
+            thresholdStart = 4.0 # watts
             thresholdEnd = 4.0 # watts
         }
     },
@@ -34,7 +34,7 @@ actors {
         messageEnd = "Die Spülmaschine ist fertig, bitte ausräumen!"
         queue {
             size = 60
-            thresholdStart = 0.1
+            thresholdStart = 4.0
             thresholdEnd = 4.0
         }
     }
