@@ -6,12 +6,12 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import java.net.URL
-import java.security.MessageDigest
-import java.math.BigInteger
+import java.nio.charset.StandardCharsets
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import kotlin.experimental.xor
 
 
 class FritzBox(
@@ -44,7 +44,7 @@ class FritzBox(
 
     private fun login() {
         val request = Request.Builder()
-            .url("$baseURL/login_sid.lua?sid=$sid")
+            .url("$baseURL/login_sid.lua?version=2&username=$userName&sid=$sid")
             .build()
 
         val response = client.newCall(request).execute()
@@ -56,10 +56,10 @@ class FritzBox(
             return
         }
 
-        val challenge = solveChallenge(sessionInfo)
+        val challenge = solveChallenge(sessionInfo.challenge, password)
 
         val loginRequest = Request.Builder()
-            .url("$baseURL/login_sid.lua?username=${userName}&response=$challenge")
+            .url("$baseURL/login_sid.lua?version=2&username=$userName&response=$challenge")
             .build()
 
         val loginResponse = client.newCall(loginRequest).execute()
@@ -69,25 +69,77 @@ class FritzBox(
             sid = loginSessionInfo.sid
             return
         } else {
-            throw RuntimeException("$javaClass rejected auth credentials")
+            throw RuntimeException("$javaClass rejected auth credentials, blocked for ${loginSessionInfo.blockTime} secs.")
         }
     }
 
-    private fun solveChallenge(s: SessionInfo): String {
-        val md5 = MessageDigest.getInstance("MD5").also {
-            it.update("${s.challenge}-$password".toByteArray(Charsets.UTF_16LE))
+    companion object {
+        fun solveChallenge(challenge: String, password: String): String {
+            val parts = challenge.split('$')
+            val iter1 = parts[1].toInt()
+            val salt1 = parts[2].toHexByteArray()
+            val iter2 = parts[3].toInt()
+            val salt2 = parts[4].toHexByteArray()
+
+            val encoded = password.toByteArray(StandardCharsets.UTF_8)
+
+            val hash1 = encrypt(encoded, salt1, iter1)
+            val hash2 = encrypt(hash1, salt2, iter2)
+
+            return "${parts[4]}$${hash2.toHexString()}"
         }
 
-        val hash = BigInteger(1, md5.digest()).toString(16)
+        private fun encrypt(password: ByteArray, salt: ByteArray, iterations: Int): ByteArray {
+            val alg = "HmacSHA256"
+            val sha256mac = Mac.getInstance(alg)
 
-        return "${s.challenge}-$hash"
+            sha256mac.init(SecretKeySpec(password, alg))
+
+            val ret = ByteArray(sha256mac.macLength)
+            var tmp = ByteArray(salt.size + 4)
+
+            System.arraycopy(salt, 0, tmp, 0, salt.size)
+            tmp[salt.size + 3] = 1
+
+            for (i in 0 until iterations) {
+                tmp = sha256mac.doFinal(tmp)
+
+                for (k in ret.indices) {
+                    ret[k] = ret[k] xor tmp[k]
+                }
+            }
+
+            return ret
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private data class SessionInfo(
         @JsonProperty("SID") val sid: String,
-        @JsonProperty("Challenge") val challenge: String) {
+        @JsonProperty("Challenge") val challenge: String,
+        @JsonProperty("BlockTime") val blockTime: Int) {
 
         val valid = sid != "0000000000000000"
     }
+}
+
+private fun ByteArray.toHexString(): String {
+    val s: StringBuilder = StringBuilder(this.size * 2)
+
+    this.forEach {
+        s.append(String.format("%02x", it))
+    }
+
+    return s.toString()
+}
+
+private fun String.toHexByteArray(): ByteArray {
+    val len: Int = this.length / 2
+    val ret = ByteArray(len)
+
+    for (i in 0 until len) {
+        ret[i] = this.substring(i * 2, i * 2 + 2).toShort(16).toByte()
+    }
+
+    return ret
 }
