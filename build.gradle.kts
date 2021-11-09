@@ -1,25 +1,48 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URI
 
 plugins {
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.31"
     application
-    id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "com.github.domnikl"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    jcenter()
     mavenCentral()
+    maven {
+        name = "m2-dv8tion"
+        url = URI("https://m2.dv8tion.net/releases")
+    }
 }
 
+val vertxVersion = "4.2.1"
+val junitJupiterVersion = "5.7.0"
+
+val mainVerticleName = "org.domnikl.gaia.ExtractorVerticle"
+val launcherClassName = "org.domnikl.gaia.ServiceKt"
+
+val watchForChange = "src/**/*"
+val doOnChange = "${projectDir}/gradlew classes"
+
 application {
-    mainClassName = "ServiceKt"
+    mainClass.set(launcherClassName)
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
+    implementation("io.vertx:vertx-web")
+    implementation("io.vertx:vertx-micrometer-metrics")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.7.5")
+    implementation("io.vertx:vertx-lang-kotlin-coroutines")
+    implementation("io.vertx:vertx-lang-kotlin")
+    implementation(kotlin("stdlib-jdk8"))
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.9")
@@ -29,21 +52,31 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api-kotlin:1.0.0")
     implementation("org.apache.logging.log4j:log4j-api:2.11.1")
     implementation("org.apache.logging.log4j:log4j-core:2.11.1")
-    implementation("net.dv8tion:JDA:4.2.0_208")
+    implementation("net.dv8tion:JDA:4.3.0_340")
     implementation("com.typesafe:config:1.4.0")
 
-    testImplementation("junit:junit:4.12")
+    testImplementation("io.vertx:vertx-junit5")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }
 
-tasks {
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
-    }
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions.jvmTarget = "11"
 
-    shadowJar {
-        archiveBaseName.set("${project.name}-fat")
-
-        // defaults to all, so removing this overrides the normal, non-fat jar
-        archiveClassifier.set("")
+tasks.withType<ShadowJar> {
+    archiveClassifier.set("fat")
+    manifest {
+        attributes(mapOf("Main-Verticle" to mainVerticleName))
     }
+    mergeServiceFiles()
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+        events = setOf(PASSED, SKIPPED, FAILED)
+    }
+}
+
+tasks.withType<JavaExec> {
+    args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
 }
