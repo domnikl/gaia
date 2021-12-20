@@ -4,11 +4,12 @@ import com.typesafe.config.Config
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import okhttp3.OkHttpClient
-import org.apache.logging.log4j.kotlin.logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.net.URL
 
 class Factory(config: Config) {
-    val logger = logger("Gaia")
+    val logger: Logger = LoggerFactory.getLogger("Gaia")
 
     private val httpClient = OkHttpClient()
 
