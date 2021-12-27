@@ -32,4 +32,8 @@ class Factory(config: Config) {
     val notificationChannel: TextChannel by lazy {
         jda.getTextChannelsByName(config.getString("discord.channel"), true).first()
     }
+
+    val todoistClient: TodoistClient by lazy {
+        TodoistClient(config.getString("todoist.accessToken"), config.getString("todoist.projectId"), httpClient)
+    }
 }

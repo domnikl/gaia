@@ -33,6 +33,7 @@ fun main(args: Array<String>): Unit = runBlocking {
     val logger = factory.logger
     val fritzBox = factory.fritzBox
     val notificationChannel = factory.notificationChannel
+    val todoistClient = factory.todoistClient
     val gauges = mutableMapOf<String, Double>()
     val triggeredStart = mutableMapOf<String, Double>()
     val triggeredEnd = mutableMapOf<String, Double>()
@@ -43,6 +44,7 @@ fun main(args: Array<String>): Unit = runBlocking {
             val name = config.getString("actors.$key.name")
             val messageStart = config.getString("actors.$key.messageStart")
             val messageEnd = config.getString("actors.$key.messageEnd")
+            val taskEnd = config.getString("actors.$key.taskEnd")
 
             val queueSize = config.getInt("actors.$key.queue.size")
             val thresholdStart = config.getDouble("actors.$key.queue.thresholdStart").toFloat()
@@ -83,6 +85,7 @@ fun main(args: Array<String>): Unit = runBlocking {
                     }),
                     TriggeringQueue(queueSize, TriggeringQueue.Trigger({ f: Float -> f < thresholdEnd }) {
                         notificationChannel.sendMessage(messageEnd).queue()
+                        todoistClient.createTask(taskEnd)
 
                         triggeredEnd[ain] = triggeredEnd[ain]!! + 1
 
