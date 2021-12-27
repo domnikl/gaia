@@ -94,10 +94,12 @@ fun main(args: Array<String>): Unit = runBlocking {
 
         while (true) {
             actors.forEach { actor ->
-                val power = fritzBox.power(actor.ain).also { actor.add(it) }
+                fritzBox.power(actor.ain)?.let {
+                    actor.add(it)
 
-                gauges[actor.ain] = power.toDouble()
-                logger.info("Value from FritzBox actor '${actor.name}' (${actor.ain}) $power")
+                    gauges[actor.ain] = it.toDouble()
+                    logger.info("Value from FritzBox actor '${actor.name}' (${actor.ain}) $it")
+                }
             }
 
             delay(1000)

@@ -23,7 +23,7 @@ class FritzBox(
     private var sid: String = ""
 
     // power returns the kW/h consumed by the device on ain
-    suspend fun power(ain: String): Float {
+    suspend fun power(ain: String): Float? {
         val body = withContext(Dispatchers.IO) {
             login()
 
@@ -31,7 +31,11 @@ class FritzBox(
             response.body?.source()?.readString(Charsets.UTF_8)
         }
 
-        return body?.toFloat()?.let { it * 0.001F } ?: throw IllegalStateException("Could not get power")
+        return try {
+            body?.toFloat()?.let { it * 0.001F } ?: throw IllegalStateException("Could not get power")
+        } catch (e: NumberFormatException) {
+            null
+        }
     }
 
     private fun request(ain: String, command: String): Response {
