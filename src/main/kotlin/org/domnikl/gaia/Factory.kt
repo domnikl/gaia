@@ -1,25 +1,28 @@
 package org.domnikl.gaia
 
 import com.typesafe.config.Config
+import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.vertx.micrometer.backends.BackendRegistries
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import okhttp3.OkHttpClient
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.domnikl.gaia.FritzboxActor.Companion.fromConfig
 import java.net.URL
 
-class Factory(config: Config) {
-    val logger: Logger = LoggerFactory.getLogger("Gaia")
-
+class Factory(val config: Config) {
     private val httpClient = OkHttpClient()
 
-    val fritzBox by lazy {
-        FritzBox(
+    private val fritzBox by lazy {
+        FritzboxActor.FritzBox(
             config.getString("fritzBox.password"),
             config.getString("fritzBox.user"),
             URL(config.getString("fritzBox.url")),
             httpClient
         )
+    }
+
+    val octoprintClient by lazy {
+        OctoprintClient(config.getString("octoprint.accessToken"), httpClient)
     }
 
     val jda by lazy {
@@ -29,11 +32,22 @@ class Factory(config: Config) {
             .awaitReady()
     }
 
-    val notificationChannel: TextChannel by lazy {
+    private val notificationChannel: TextChannel by lazy {
         jda.getTextChannelsByName(config.getString("discord.channel"), true).first()
     }
 
-    val todoistClient: TodoistClient by lazy {
+    private val todoistClient: TodoistClient by lazy {
         TodoistClient(config.getString("todoist.accessToken"), config.getString("todoist.projectId"), httpClient)
+    }
+
+    private val registry by lazy {
+        BackendRegistries.getDefaultNow() as PrometheusMeterRegistry
+    }
+
+    fun createActor(id: String): Actor {
+        return when (val type = config.getString("actors.$id.type")) {
+            "fritzbox" -> fromConfig(id, fritzBox, registry, todoistClient, notificationChannel, config)
+            else -> throw IllegalArgumentException("Unknown type: $type")
+        }
     }
 }
