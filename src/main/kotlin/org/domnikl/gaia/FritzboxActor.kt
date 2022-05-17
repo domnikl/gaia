@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.sun.jdi.request.EventRequestManager
 import com.typesafe.config.Config
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.Tag
@@ -15,9 +14,9 @@ import net.dv8tion.jda.api.entities.TextChannel
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.slf4j.LoggerFactory
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.util.logging.Logger
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.xor
@@ -35,7 +34,7 @@ class FritzboxActor(
     taskMessage: String,
     todoistClient: TodoistClient
 ) : Actor {
-    private val logger = Logger.getLogger(FritzboxActor::class.java.canonicalName)
+    private val logger = LoggerFactory.getLogger(FritzboxActor::class.java.canonicalName)
     private var gauge = 0.0
     private var triggeredStart = 0.0
     private var triggeredEnd = 0.0

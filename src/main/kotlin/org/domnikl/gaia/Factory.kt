@@ -9,7 +9,7 @@ import okhttp3.OkHttpClient
 import org.domnikl.gaia.FritzboxActor.Companion.fromConfig
 import java.net.URL
 
-class Factory(val config: Config) {
+class Factory(private val config: Config) {
     private val httpClient = OkHttpClient()
 
     private val fritzBox by lazy {
@@ -22,7 +22,7 @@ class Factory(val config: Config) {
     }
 
     val octoprintClient by lazy {
-        OctoprintClient(config.getString("octoprint.accessToken"), httpClient)
+        OctoprintActor.OctoprintClient(config.getString("octoprint.accessToken"), httpClient)
     }
 
     val jda by lazy {
@@ -47,6 +47,7 @@ class Factory(val config: Config) {
     fun createActor(id: String): Actor {
         return when (val type = config.getString("actors.$id.type")) {
             "fritzbox" -> fromConfig(id, fritzBox, registry, todoistClient, notificationChannel, config)
+            "octoprint" -> OctoprintActor.fromConfig(id, octoprintClient, registry, notificationChannel, config)
             else -> throw IllegalArgumentException("Unknown type: $type")
         }
     }
