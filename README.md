@@ -45,3 +45,10 @@ discord {
     channel = general
 }
 ```
+
+# Build & run it
+
+```shell
+docker build -t domnikl/gaia .
+docker run -v $(pwd)/gaia.conf:/app/gaia.conf domnikl/gaia /app/gaia.conf
+```

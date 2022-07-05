@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.7.0"
     application
     id("com.github.johnrengelman.shadow") version "7.0.0"
 }
@@ -60,10 +60,11 @@ dependencies {
 }
 
 val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions.jvmTarget = "11"
+compileKotlin.kotlinOptions.jvmTarget = "17"
 
 tasks.withType<ShadowJar> {
     archiveClassifier.set("fat")
+    archiveFileName.set("gaia.jar")
     manifest {
         attributes(mapOf("Main-Verticle" to mainVerticleName))
     }
