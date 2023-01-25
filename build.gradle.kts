@@ -53,7 +53,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.8")
     implementation("ch.qos.logback:logback-core:1.2.8")
     implementation("net.dv8tion:JDA:4.3.0_340")
-    implementation("com.typesafe:config:1.4.0")
+    implementation("com.typesafe:config:1.4.2")
 
     testImplementation("io.vertx:vertx-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
