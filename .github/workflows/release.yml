@@ -20,7 +20,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@6c3ca5dfa6895029f82e5b2f26f060bc0d3c6a2c
         with:
           images: domnikl/gaia
 
