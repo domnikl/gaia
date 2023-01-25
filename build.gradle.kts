@@ -21,7 +21,7 @@ repositories {
 }
 
 val vertxVersion = "4.2.1"
-val junitJupiterVersion = "5.7.0"
+val junitJupiterVersion = "5.9.2"
 
 val mainVerticleName = "org.domnikl.gaia.ExtractorVerticle"
 val launcherClassName = "org.domnikl.gaia.ServiceKt"
