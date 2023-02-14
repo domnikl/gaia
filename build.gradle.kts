@@ -38,7 +38,7 @@ dependencies {
     implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
     implementation("io.vertx:vertx-web")
     implementation("io.vertx:vertx-micrometer-metrics")
-    implementation("io.micrometer:micrometer-registry-prometheus:1.7.5")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.10.4")
     implementation("io.vertx:vertx-lang-kotlin-coroutines")
     implementation("io.vertx:vertx-lang-kotlin")
     implementation(kotlin("stdlib-jdk8"))
