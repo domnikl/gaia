@@ -46,7 +46,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.1")
     implementation("com.fasterxml.woodstox:woodstox-core:5.1.0")
     implementation("org.slf4j:slf4j-api:1.7.36")
