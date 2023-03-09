@@ -51,7 +51,7 @@ dependencies {
     implementation("com.fasterxml.woodstox:woodstox-core:5.1.0")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("ch.qos.logback:logback-classic:1.4.5")
-    implementation("ch.qos.logback:logback-core:1.2.8")
+    implementation("ch.qos.logback:logback-core:1.4.5")
     implementation("net.dv8tion:JDA:4.3.0_340")
     implementation("com.typesafe:config:1.4.2")
 
