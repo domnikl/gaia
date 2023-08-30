@@ -20,7 +20,7 @@ repositories {
     }
 }
 
-val vertxVersion = "4.4.0"
+val vertxVersion = "4.4.5"
 val junitJupiterVersion = "5.9.2"
 
 val mainVerticleName = "org.domnikl.gaia.ExtractorVerticle"
