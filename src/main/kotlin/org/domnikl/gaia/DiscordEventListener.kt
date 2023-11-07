@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 
 @ConfigurationProperties(prefix = "gaia.discord")
 @EnableConfigurationProperties
@@ -19,20 +20,25 @@ class DiscordNotifier(private val properties: DiscordProperties, builder: WebCli
 
     @EventListener
     fun handleApplianceStarted(event: ApplianceStartedEvent) {
-        event.appliance.notificationStarted?.let { send(it) }
+        event.appliance.discordNotificationStarted?.let { send(it) }
     }
 
     @EventListener
     fun handleApplianceStopped(event: ApplianceStoppedEvent) {
-        event.appliance.notificationEnded?.let { send(it) }
+        event.appliance.discordNotificationStopped?.let { send(it) }
     }
 
     private fun send(message: String) {
         client.post()
             .bodyValue(Webhook(message, properties.username))
-            .retrieve()
-            .toBodilessEntity()
-            .block() ?: throw IllegalStateException("Failed to send message via Webhook")
+            .exchangeToMono {
+                if (it.statusCode().is2xxSuccessful) {
+                    Mono.empty<String>()
+                } else {
+                    it.createException().flatMap { e -> Mono.error(e) }
+                }
+            }
+            .block()
     }
 
     data class Webhook(val content: String, val username: String)

@@ -6,6 +6,8 @@ data class Appliance(
     val queueSize: Int? = null,
     val thresholdStart: Double? = null,
     val thresholdEnd: Double? = null,
-    val notificationStarted: String? = null,
-    val notificationEnded: String? = null
+    val discordNotificationStarted: String? = null,
+    val discordNotificationStopped: String? = null,
+    val todoistTaskStarted: String? = null,
+    val todoistTaskStopped: String? = null
 )
