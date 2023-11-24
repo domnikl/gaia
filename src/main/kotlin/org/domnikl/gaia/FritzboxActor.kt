@@ -4,11 +4,8 @@ import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import kotlin.system.exitProcess
 
 @Component
 class FritzboxActor(
@@ -38,18 +35,21 @@ class FritzboxActor(
 
             Gauge
                 .builder("gaia_appliance_power", power) { p -> p[appliance] ?: 0.0 }
+                .description("Currently consumed/produced power in W")
                 .tags(listOf(Tag.of("name", name), Tag.of("ain", ain)))
                 .strongReference(true)
                 .register(registry)
 
             Gauge
                 .builder("gaia_appliance_energy", energy) { e -> e[appliance] ?: 0.0 }
+                .description("Total consumed/produced energy in Wh")
                 .tags(listOf(Tag.of("name", name), Tag.of("ain", ain)))
                 .strongReference(true)
                 .register(registry)
 
             Gauge
                 .builder("gaia_appliance_temperature", temperature) { t -> t[appliance] ?: 0.0 }
+                .description("Current temperature measured at the device in Celsius")
                 .tags(listOf(Tag.of("name", name), Tag.of("ain", ain)))
                 .strongReference(true)
                 .register(registry)
